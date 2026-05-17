@@ -1,10 +1,43 @@
-
 import streamlit as st
 import pandas as pd
 from pathlib import Path
 from datetime import date, datetime, timedelta
+import hmac
 
 st.set_page_config(page_title="Lactandcia CRM", page_icon="🤱", layout="wide")
+
+
+def check_password():
+    def password_entered():
+        if hmac.compare_digest(
+            st.session_state["password"],
+            st.secrets["APP_PASSWORD"]
+        ):
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]
+        else:
+            st.session_state["password_correct"] = False
+
+    if st.session_state.get("password_correct", False):
+        return True
+
+    st.title("Lactandcia CRM")
+    st.text_input(
+        "Contraseña",
+        type="password",
+        on_change=password_entered,
+        key="password"
+    )
+
+    if "password_correct" in st.session_state:
+        st.error("Contraseña incorrecta")
+
+    return False
+
+
+if not check_password():
+    st.stop()
+
 
 DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
@@ -69,13 +102,16 @@ RECURSOS = {
     ],
 }
 
+
 def load_csv(path, columns):
     if path.exists():
         return pd.read_csv(path)
     return pd.DataFrame(columns=columns)
 
+
 def save_csv(df, path):
     df.to_csv(path, index=False)
+
 
 clientes_cols = ["id_cliente", "nombre", "telefono", "email", "fecha_alta", "origen", "consentimiento_rgpd", "notas"]
 casos_cols = ["id_caso", "id_cliente", "fecha_inicio", "problema", "estado", "prioridad", "tipo_servicio", "proxima_revision", "resumen", "plan_accion"]
@@ -88,6 +124,7 @@ tareas = load_csv(TAREAS_FILE, tareas_cols)
 st.sidebar.title("Lactandcia CRM")
 page = st.sidebar.radio("Ir a", ["Dashboard", "Nueva clienta/caso", "Casos", "Seguimientos", "Biblioteca", "Exportar"])
 
+
 def next_id(df, prefix, col):
     if df.empty:
         return f"{prefix}-001"
@@ -98,6 +135,7 @@ def next_id(df, prefix, col):
         except Exception:
             pass
     return f"{prefix}-{max(nums + [0]) + 1:03d}"
+
 
 if page == "Dashboard":
     st.title("Dashboard operativo")
@@ -238,11 +276,15 @@ elif page == "Seguimientos":
         else:
             st.dataframe(tareas.sort_values("fecha"), use_container_width=True)
 
-            id_tarea = st.selectbox("Marcar tarea como hecha", tareas[tareas["estado"] != "Hecha"]["id_tarea"].tolist() if not tareas[tareas["estado"] != "Hecha"].empty else [])
-            if id_tarea and st.button("Marcar como hecha"):
-                tareas.loc[tareas["id_tarea"] == id_tarea, "estado"] = "Hecha"
-                save_csv(tareas, TAREAS_FILE)
-                st.success("Tarea completada.")
+            pendientes = tareas[tareas["estado"] != "Hecha"]["id_tarea"].tolist()
+            if pendientes:
+                id_tarea = st.selectbox("Marcar tarea como hecha", pendientes)
+                if st.button("Marcar como hecha"):
+                    tareas.loc[tareas["id_tarea"] == id_tarea, "estado"] = "Hecha"
+                    save_csv(tareas, TAREAS_FILE)
+                    st.success("Tarea completada.")
+            else:
+                st.info("No hay tareas pendientes.")
 
 elif page == "Biblioteca":
     st.title("Biblioteca de recursos")

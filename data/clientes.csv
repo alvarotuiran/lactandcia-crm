@@ -1,2 +1,1 @@
-id_cliente,nombre,telefono,email,fecha_alta,origen,consentimiento_rgpd,notas
-CLI-001,Ejemplo Madre,600000000,ejemplo@email.com,2026-05-17,Instagram,True,Caso ficticio de prueba
+id_cliente,nombre_mama,nombre_pareja,telefono,email,ciudad,fecha_alta,como_me_conociste,consentimiento_rgpd,autorizacion_imagenes,notas_generales

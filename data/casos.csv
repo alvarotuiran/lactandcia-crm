@@ -1,2 +1,1 @@
-id_caso,id_cliente,fecha_inicio,problema,estado,prioridad,tipo_servicio,proxima_revision,resumen,plan_accion
-CASO-001,CLI-001,2026-05-17,Agarre,En seguimiento,Alta,Consulta online,2026-05-19,Dolor inicial y dudas de agarre,Revisar posición y seguimiento en 48h
+id_caso,id_cliente,id_bebe,fecha_inicio,problema,estado,prioridad,tipo_servicio,proxima_revision,resumen,plan_accion
